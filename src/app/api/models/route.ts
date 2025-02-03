@@ -8,7 +8,8 @@ export async function GET() {
   try {
     const openai = getOpenAIClient();
     const models = await openai.models.list();
-    return NextResponse.json(models.data);
+    const modelIds = models.data.map((model) => model.id);  // Only return the IDs
+    return NextResponse.json(modelIds);
   } catch (error) {
     console.error('OpenAI API error:', error);
     return NextResponse.json(
