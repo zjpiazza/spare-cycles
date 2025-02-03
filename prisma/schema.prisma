@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model GpuStats {
+  id           BigInt   @id @default(autoincrement())
+  timestamp    DateTime @db.Timestamptz
+  gpuName      String   @map("gpu_name")
+  temperature  Int
+  fanSpeed     Int      @map("fan_speed")
+  memoryTotal  Int      @map("memory_total")
+  memoryUsed   Int      @map("memory_used")
+  utilization  Int
+  powerDraw    Decimal  @map("power_draw")
+  powerLimit   Decimal  @map("power_limit")
+
+  @@index([timestamp(sort: Desc)])
+  @@map("gpu_stats")
+}
