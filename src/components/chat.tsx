@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Send } from 'lucide-react';
+import { Send, User, Bot } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -112,8 +112,14 @@ export function Chat({ models }: ChatProps) {
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex items-start space-x-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
+            {message.role === 'assistant' && (
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+            )}
+            
             <div
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
                 message.role === 'user' 
@@ -123,6 +129,12 @@ export function Chat({ models }: ChatProps) {
             >
               {message.content || (isLoading && index === messages.length - 1 ? '...' : '')}
             </div>
+
+            {message.role === 'user' && (
+              <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-white" />
+              </div>
+            )}
           </div>
         ))}
       </div>
