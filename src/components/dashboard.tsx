@@ -1,21 +1,11 @@
-'use client';
-
 import Link from 'next/link';
 import { ArrowLeft, Cpu, Zap, Shield, Clock } from 'lucide-react';
 
-export default function About() {
+export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <Link 
-            href="/"
-            className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 mb-8"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Chat</span>
-          </Link>
-
+    
+      <div>
+        <div>
           <div className="space-y-12">
             <div className="text-center space-y-4">
               <Cpu className="w-16 h-16 text-blue-400 mx-auto" />
@@ -85,7 +75,7 @@ export default function About() {
                 Experience the power of local GPU-accelerated AI models with low latency and high privacy.
               </p>
               <Link
-                href="/"
+                href="/chat"
                 className="inline-flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
               >
                 <Cpu className="w-5 h-5" />
@@ -95,6 +85,5 @@ export default function About() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
