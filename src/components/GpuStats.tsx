@@ -1,93 +1,69 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Activity } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+
 
 interface GpuStats {
+  id: number;
+  timestamp: string;
   gpu_name: string;
   temperature: number;
   fan_speed: number;
-  memory: {
-    total: number;
-    used: number;
-  };
+  memory_total: number;
+  memory_used: number;
   utilization: number;
-  power: {
-    draw: number;
-    limit: number;
-  };
+  power_draw: number;
+  power_limit: number;
 }
 
-const WS_URL = process.env.NEXT_PUBLIC_GPU_STATS_WS_URL || 'ws://stats.sparecycles.dev';
+const supabase = createClient();
+
 
 export function GpuStats() {
   const [stats, setStats] = useState<GpuStats | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
-
-  const connect = useCallback(() => {
-    if (isConnecting || wsRef.current?.readyState === WebSocket.CONNECTING) {
-      return;
-    }
-
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-
-    setIsConnecting(true);
-    setError(null);
-
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setIsConnecting(false);
-      setError(null);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setStats(data);
-      } catch (err) {
-        setError('Failed to parse GPU stats');
-      }
-    };
-
-    ws.onerror = () => {
-      setError('Failed to connect to GPU stats service');
-      setIsConnecting(false);
-      wsRef.current = null;
-    };
-
-    ws.onclose = () => {
-      setIsConnecting(false);
-      wsRef.current = null;
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (!wsRef.current) {
-          connect();
-        }
-      }, 5000);
-    };
-  }, []);
 
   useEffect(() => {
-    connect();
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+    // First, fetch the most recent stats
+    const fetchLatestStats = async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('gpu_stats')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (fetchError) throw fetchError;
+        if (data) setStats(data);
+      } catch (err) {
+        setError('Failed to fetch initial GPU stats');
       }
     };
-  }, [connect]);
+
+    fetchLatestStats();
+
+    // Subscribe to new inserts
+    const subscription = supabase
+      .channel('gpu_stats_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'gpu_stats',
+        },
+        (payload) => {
+          setStats(payload.new as GpuStats);
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (error || !stats) {
     return (
@@ -97,13 +73,13 @@ export function GpuStats() {
           <Activity className="w-5 h-5 text-blue-400" />
         </div>
         <div className="text-gray-400">
-          {error || (isConnecting ? 'Connecting...' : 'Loading GPU stats...')}
+          {error || 'Loading GPU stats...'}
         </div>
       </div>
     );
   }
 
-  const memoryPercentage = (stats.memory.used / stats.memory.total) * 100;
+  const memoryPercentage = (stats.memory_used / stats.memory_total) * 100;
   
   return (
     <div className="bg-gray-800 p-6 rounded-xl">
@@ -141,7 +117,7 @@ export function GpuStats() {
         <div>
           <div className="flex justify-between mb-1">
             <span>Memory</span>
-            <span>{stats.memory.used}/{stats.memory.total} MB</span>
+            <span>{stats.memory_used}/{stats.memory_total} MB</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
@@ -153,12 +129,12 @@ export function GpuStats() {
         <div>
           <div className="flex justify-between mb-1">
             <span>Power</span>
-            <span>{stats.power.draw}/{stats.power.limit}W</span>
+            <span>{stats.power_draw}/{stats.power_limit}W</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
               className="bg-blue-400 rounded-full h-2 transition-all duration-500"
-              style={{ width: `${(stats.power.draw / stats.power.limit) * 100}%` }}
+              style={{ width: `${(stats.power_draw / stats.power_limit) * 100}%` }}
             />
           </div>
         </div>
