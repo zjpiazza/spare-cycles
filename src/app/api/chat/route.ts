@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { openai } from '@/lib/openai';
+import { getOpenAIClient } from '@/lib/openai';
+
 
 export async function POST(request: Request) {
   try {
+    const openai = getOpenAIClient();
     const body = await request.json();
     const { messages, model } = body;
     
