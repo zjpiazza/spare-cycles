@@ -4,6 +4,7 @@ import { Cpu, MessageSquare, Activity, Settings, Power, Info } from 'lucide-reac
 import Link from 'next/link';
 import { Chat } from '@/components/chat';
 import { useEffect, useState } from 'react';
+import { GpuStats } from '@/components/GpuStats';
 
 interface SystemStats {
   gpuUsage: number;
@@ -77,41 +78,8 @@ export default function Home() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-gray-800 p-6 rounded-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">GPU Status</h2>
-                <Activity className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Usage</span>
-                    <span>{systemStats.gpuUsage.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-blue-400 rounded-full h-2 transition-all duration-500"
-                      style={{ width: `${systemStats.gpuUsage}%` }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Temperature</span>
-                    <span>{systemStats.temperature.toFixed(1)}°C</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className={`rounded-full h-2 transition-all duration-500 ${
-                        systemStats.temperature > 70 ? 'bg-red-500' : 'bg-green-500'
-                      }`}
-                      style={{ width: `${(systemStats.temperature / 100) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <GpuStats />
+            
             <div className="bg-gray-800 p-6 rounded-xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Chat Models</h2>
