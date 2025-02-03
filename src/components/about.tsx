@@ -1,12 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowLeft, Cpu, Zap, Shield, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 export function About() {
   return (
     <div className="max-w-4xl mx-auto">
       <Link 
-        to="/"
+        href="/"
         className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 mb-8"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -82,7 +81,7 @@ export function About() {
             Experience the power of local GPU-accelerated AI models with low latency and high privacy.
           </p>
           <Link
-            to="/"
+            href="/"
             className="inline-flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
           >
             <Cpu className="w-5 h-5" />
